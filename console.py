@@ -123,13 +123,26 @@ class HBNBCommand(cmd.Cmd):
         class_name = args[0]
         params = {}
 
-        if args not in HBNBCommand.classes:
+        if className not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+        # Extracting parameters from command arguments
+        for param in args[1:]:
+            if "=" in param:
+                key, value = param.split("=")
+                value = value.replace('_', '').replace('\\"', '"')
+                try:
+                    # Checking and converting value to appropriate data type
+                    if value[0] == '"' and value[-1] == '"':
+                        value = str(value[1:-1])
+                    elif '-' in value:
+                        value = float(value)
+                    else:
+                        value = int(value)
+                    params[key] = value
+                except ValueError:
+                    # Skipping if parameter value cannot be recognized
+                    continue
 
     def help_create(self):
         """ Help information for the create method """

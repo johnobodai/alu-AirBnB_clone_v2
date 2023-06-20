@@ -3,6 +3,7 @@
 from fabric.api import local
 from datetime import datetime
 
+
 def do_pack():
     """Generate a .tgz archive from the contents of the web_static folder"""
     now = datetime.now()
@@ -17,4 +18,3 @@ def do_pack():
         return None
     else:
         return archive_path
-

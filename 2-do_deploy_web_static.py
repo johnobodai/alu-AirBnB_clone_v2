@@ -1,35 +1,34 @@
 #!/usr/bin/python3
 
-from fabric.api import run, put, env
+from fabric.api import local, put, env
 import os
 
-
 # Define the hosts
-env.hosts = ['<IP web-01>', '<IP web-02>']
+env.hosts = ['localhost']
 
 def do_deploy(archive_path):
-    """Distribute an archive to the web servers"""
+    """Distribute an archive to the web server"""
     if not os.path.exists(archive_path):
         return False
 
     try:
-        # Upload the archive to /tmp/ directory on the web server
+        # Upload the archive to /tmp/ directory
         put(archive_path, '/tmp/')
-
-        # Extract the archive to /data/web_static/releases/<archive filename without extension>
+        
+        # Extract the archive to the current directory
         filename = os.path.basename(archive_path)
-        folder_name = '/data/web_static/releases/' + os.path.splitext(filename)[0]
-        run('mkdir -p {}'.format(folder_name))
-        run('tar -xzf /tmp/{} -C {}'.format(filename, folder_name))
+        local('mkdir -p temp_folder')
+        local('tar -xzf /tmp/{} -C temp_folder'.format(filename))
 
-        # Delete the archive from the web server
-        run('rm /tmp/{}'.format(filename))
+        # Delete the archive from the local machine
+        local('rm /tmp/{}'.format(filename))
 
-        # Delete the symbolic link /data/web_static/current
-        run('rm -rf /data/web_static/current')
+        # Delete the existing index.html file, if it exists
+        local('rm -f index.html')
 
-        # Create a new symbolic link /data/web_static/current linked to the new version
-        run('ln -s {} /data/web_static/current'.format(folder_name))
+        # Move the contents of temp_folder to the current directory
+        local('mv temp_folder/web_static/* .')
+        local('rm -rf temp_folder')
 
         return True
     except:
